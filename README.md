@@ -36,13 +36,15 @@ Esta se compone de los siguientes elementos para poder ser procesado correctamen
 			pip show networkx
 
 	En caso de no tenerlo instalado ejecuta:
-		  		pip install networkx
+
+		  	pip install networkx
 
 	3. **Tener pygraphviz  (version 1.13) instalado, puedes verificarlo con:**
 
 		 	pip show pygraphviz
 
 	En caso de no tenerlo instalado ejecuta:
+    
 		  		pip install pygraphviz
 
 
