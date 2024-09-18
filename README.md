@@ -23,7 +23,7 @@ Esta se compone de los siguientes elementos para poder ser procesado correctamen
 ## Uso
 - Para correr este programa debes hacer lo siguiente:
 	### Requisitos
-	1.** Tener Python instalado, puedes verificarlo de la siguiente forma**
+	1.**Tener Python instalado, puedes verificarlo de la siguiente forma**
 
     		python --version
 
@@ -31,7 +31,7 @@ Esta se compone de los siguientes elementos para poder ser procesado correctamen
 
 	  		sudo apt install python
 
-	2. **Tener Network X (version 3.1) instalado, puedes verificarlo con:**
+	2.**Tener Network X (version 3.1) instalado, puedes verificarlo con:**
 
 			pip show networkx
 
