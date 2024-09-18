@@ -1,6 +1,6 @@
 # Árbol Gramatical
 
- **Realizado por: **
+ **Realizado por:**
  - Mariana Ruge Vargas
 
 ## Descripción
