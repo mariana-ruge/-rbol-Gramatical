@@ -65,7 +65,7 @@ Esta se compone de los siguientes elementos para poder ser procesado correctamen
 			ls
 		
 		Debes ver 3 archivos:
-		1. ** gramatica.py:** Este archivo valida las cadenas, lee la gramática desde un 			archivo txt, valida las cadenas y construye el árbol sintáctico correctamente.
+		1. **gramatica.py:** Este archivo valida las cadenas, lee la gramática desde un 			archivo txt, valida las cadenas y construye el árbol sintáctico correctamente.
 		2.  **expresion.txt:** Es el archivo que contiene la gramática a evaluar en cada 		una de las entradas o inputs. 
 		3. **gramatica2.txt**: Es el archivo que contiene la gramática a evaluar en cada 		una de las entradas o inputs, para verificar el correcto funcionamiento del programa.
 
