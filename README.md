@@ -29,7 +29,7 @@ Esta se compone de los siguientes elementos para poder ser procesado correctamen
 
 	En caso de no tenerlo instalado ejecuta:
 
-	  		sudo apt install python
+	  	sudo apt install python
 
 	2.**Tener Network X (version 3.1) instalado, puedes verificarlo con:**
 
@@ -44,7 +44,7 @@ Esta se compone de los siguientes elementos para poder ser procesado correctamen
 		 	pip show pygraphviz
 
 	En caso de no tenerlo instalado ejecuta:
-    
+
 		  		pip install pygraphviz
 
 
