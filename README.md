@@ -45,7 +45,7 @@ Esta se compone de los siguientes elementos para poder ser procesado correctamen
 
 	En caso de no tenerlo instalado ejecuta:
 
-		  		pip install pygraphviz
+		pip install pygraphviz
 
 
 ### Clonar el repositorio
