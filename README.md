@@ -34,8 +34,8 @@ Se compone de los siguientes elementos:
 - **E**: Expresión.
 - **T:** Término.
 - **F:** Factor.
-- **E', T': **Representan continuaciones de E y T, respectivamente.
-- **Símbolo inicial (S): **E: La producción comienza con una expresión.
+- **E', T':** Representan continuaciones de E y T, respectivamente.
+- **Símbolo inicial (S):** E: La producción comienza con una expresión.
 - No hay productos (P)
 
 
