@@ -60,7 +60,7 @@ Se compone de los siguientes elementos:
 
 	3. **Tener pygraphviz  (version 1.13) instalado, puedes verificarlo con:**
 
-		pip show pygraphviz
+	    pip show pygraphviz
 
 	En caso de no tenerlo instalado ejecuta:
 
