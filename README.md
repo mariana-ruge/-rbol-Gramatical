@@ -54,17 +54,13 @@ Se compone de los siguientes elementos:
 
 		pip show networkx
 
-	En caso de no tenerlo instalado ejecuta:
+	3. . **Tener pygraphviz  (version 1.13) instalado, puedes verificarlo con:**
 
-		pip install networkx
-
-	3. **Tener pygraphviz  (version 1.13) instalado, puedes verificarlo con:**
-
-	    pip show pygraphviz
+			pip show pygraphviz
 
 	En caso de no tenerlo instalado ejecuta:
 
-		pip install pygraphviz
+			pip install pygraphviz
 
 
 ### Clonar el repositorio
