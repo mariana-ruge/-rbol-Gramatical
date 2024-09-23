@@ -53,6 +53,10 @@ Se compone de los siguientes elementos:
 	2.**Tener Network X (version 3.1) instalado, puedes verificarlo con:**
 
 		pip show networkx
+    
+    En caso de no tenerlo instalado ejecuta:
+
+			pip install networkx
 
 	3. . **Tener pygraphviz  (version 1.13) instalado, puedes verificarlo con:**
 
