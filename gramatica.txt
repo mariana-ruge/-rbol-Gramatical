@@ -3,5 +3,6 @@ Vxt: S A B
 S: S
 P:
 S -> A B
+S -> A A
 A -> a
 B -> b
