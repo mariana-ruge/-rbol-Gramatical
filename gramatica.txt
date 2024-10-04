@@ -1,8 +1,4 @@
-Vt: a b
-Vxt: S A B
-S: S
-P:
-S -> A B
-S -> A A
+S -> A B | ε
 A -> a
 B -> b
+

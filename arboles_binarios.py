@@ -1,235 +1,202 @@
-# Importar las librerías necesarias
-import networkx as nx  # Para construir y manipular grafos
-import matplotlib.pyplot as plt  # Para generar gráficos
-from networkx.drawing.nx_agraph import graphviz_layout  # Para ajustar el grafo a una estructura de árbol
+#Importar librerias
+import networkx as nx #Para crear el grafo
+import matplotlib.pyplot as plt #Para hacer representaciones visuales
+from networkx.drawing.nx_agraph import graphviz_layout #Para organizarlo en estructura de árbol
 
-#Declarar la clase nodo 
-class Nodo:
-    #Atributos
-    _id_counter = 0  # Contador para asignar IDs únicos a los nodos
-    def __init__(self, valor):
-        self.valor = valor  # Asigna el valor del nodo
-        self.izquierda = None  # Inicializa el hijo izquierdo como None
-        self.derecha = None  # Inicializa el hijo derecho como None
-        self.id = Nodo._id_counter  # Asigna un ID único al nodo
-        Nodo._id_counter += 1  # Incrementa el contador de IDs para el próximo nodo
+# Función para leer una gramática desde un archivo y validarla
+def leer_gramatica(archivo):
+    """
+    Lee una gramática desde un archivo .txt y la devuelve junto con sus terminales, no terminales y símbolo inicial.
+    """
+    #Crear el diccionario de la gramática y los conjuntos de terminales y no terminales.
+    #Inicializar el simbolo
+    gramatica = {} 
+    terminales = set()
+    no_terminales = set()
+    simbolo_inicial = None
+    
+    # Abre el archivo y procesa cada línea
+    with open(archivo, 'r') as f:
+        for linea in f:
+            if '->' in linea:  # Verifica si la línea contiene una producción
+                lado_izq, lado_der = linea.strip().split('->')  # Separar el lado izquierdo y derecho de la producción
+                lado_izq = lado_izq.strip()
+                producciones = [prod.strip() for prod in lado_der.split('|')]  # Separar las producciones alternativas
+                
+                if not simbolo_inicial:  # El primer no terminal se considera el símbolo inicial
+                    simbolo_inicial = lado_izq
+                #Añadir a los no terminales
+                no_terminales.add(lado_izq)
+                
+                #Recorrer las producciones
+                for prod in producciones:
+                    #Buscar los simbolos en las producciones
+                    for simbolo in prod:
+                        #Verificar si es mayúscula o minúscula
+                        if simbolo.islower():
+                            terminales.add(simbolo)  # Si es minúscula, es un terminal
+                        elif simbolo.isupper():
+                            no_terminales.add(simbolo)  # Si es mayúscula, es un no terminal
+                
+                gramatica[lado_izq] = producciones  # Almacena la producción en la gramática
+    
+    return gramatica, simbolo_inicial, terminales, no_terminales
 
-# Función para leer la gramática desde un archivo
-def leer_gramatica(archivo_gramatica):
-    # Abre el archivo en modo lectura
-    with open(archivo_gramatica, 'r') as archivo:
-        Vt = set()  # Inicializa un conjunto vacío para los terminales
-        Vxt = set()  # Inicializa un conjunto vacío para los no terminales
-        P = []  # Inicializa una lista vacía para las producciones
-        S = None  # Inicializa el símbolo inicial como None
+# Función para imprimir la gramática
+def imprimir_gramatica(gramatica, simbolo_inicial, terminales, no_terminales):
+    """
+    Imprime los componentes de la gramática: símbolo inicial, terminales, no terminales y producciones.
+    """
+    print("Gramática:")
+    print(f"Símbolo inicial: {simbolo_inicial}")
+    print(f"Terminales: {', '.join(sorted(terminales))}")
+    print(f"No terminales: {', '.join(sorted(no_terminales))}")
+    print("Producciones:")
+    for no_terminal, producciones in gramatica.items():
+        print(f"{no_terminal} -> {' | '.join(producciones)}")
 
-        # Leer las diferentes partes de la gramática
-        for linea in archivo:
-            linea = linea.strip()  # Elimina espacios en blanco al inicio y final de la línea
-            if linea.startswith('Vt:'):
-                Vt = set(linea.replace('Vt:', '').strip().split())  # Lee los terminales
-            elif linea.startswith('Vxt:'):
-                Vxt = set(linea.replace('Vxt:', '').strip().split())  # Lee los no terminales
-            elif linea.startswith('S:'):
-                S = linea.replace('S:', '').strip()  # Lee el símbolo inicial
-            elif linea.startswith('P:'):
-                break  # Termina la lectura de la parte inicial
+# Función para verificar si una cadena es aceptada por la gramática
+def es_valida_cadena(gramatica, cadena, simbolo='S'):
+    """
+    Verifica si una cadena es válida según las reglas de la gramática. 
+    Por defecto, comienza con el símbolo 'S'.
+    """
+    # Caso base: cadena vacía con una producción de ε
+    if cadena == "" and 'ε' in gramatica.get(simbolo, []):
+        return True
+    if cadena == "":
+        return False
 
-        # Leer las producciones, del archivo txt
-        for linea in archivo:
-            linea = linea.strip()  # Elimina espacios en blanco al inicio y final de la línea
-            if '->' in linea:
-                izquierda, derecha = linea.split('->')  # Separa la parte izquierda y derecha de la producción
-                izquierda = izquierda.strip()  # Elimina espacios en blanco de la parte izquierda
-                derecha = derecha.strip().split()  # Convierte la parte derecha en una lista de símbolos
-                P.append((izquierda, derecha))  # Agrega la producción a la lista de producciones
+    # Recorre todas las producciones del símbolo actual
+    for produccion in gramatica.get(simbolo, []):
+        if es_valida_produccion(gramatica, cadena, produccion):
+            return True
 
-        # Verificar que todos los componentes de la gramática estén presentes
-        if not (Vt and Vxt and S and P):
-            #Si uno de los elementos no esta presente, se alza una excepcion para eviatr que el programa se rompa
-            raise ValueError("La gramática no está completa o el formato es incorrecto.")
-        return Vt, Vxt, S, P  # Devuelve los componentes de la gramática
+    return False
 
-# Función para validar la gramática
-def validar_gramatica(Vt, Vxt, S, P):
-    #Buscar el simbolo inicial dentro de los terminales
-    if S not in Vxt:
-        raise ValueError("El símbolo inicial no está en el conjunto de no terminales.")
-    #Recorrer la izquierda y la derecha de los productos en el arbol que se genera
-    for izq, der in P:
-        #Buscar los terminales por la izquierda
-        if izq not in Vxt:
-            #Levantar la excepción si no encuentran los terminales
-            raise ValueError(f"El lado izquierdo de la producción '{izq} -> {' '.join(der)}' no es un no terminal.")
-        #Buscar los simbolos en la producción
-        #Buscar por la derecha del recirrido
-        for simbolo in der:
-            #Si no se encuentra el simbolo en la producción
-            if simbolo != 'ε' and simbolo not in Vt and simbolo not in Vxt:
-                raise ValueError(f"El símbolo '{simbolo}' en la producción '{izq} -> {' '.join(der)}' no es válido.")
-
-# Función para validar una cadena según la gramática
-def validar_cadena(cadena, Vt, Vxt, S, P):
-    #Recorrer los simbolos y buscar los terminales 
-    def derivar(actual, resto, arbol_nodo):
-        if not actual:
-            return not resto, arbol_nodo  # Si no hay más símbolos por procesar, la cadena es válida si no queda resto
-
-        simbolo_actual = actual[0]  # Toma el primer símbolo de la lista actual
-
-        if simbolo_actual in Vt:  # Si el símbolo actual es un terminal
-            if resto and simbolo_actual == resto[0]:  # Si coincide con el primer símbolo del resto
-                hoja = Nodo(simbolo_actual)  # Crea un nodo hoja con el símbolo
-                arbol_nodo.izquierda = hoja  # Lo agrega como hijo izquierdo
-                return derivar(actual[1:], resto[1:], arbol_nodo), arbol_nodo  # Continúa la derivación
-            return False, None  # Si no coincide, la cadena no es válida
-
-        if simbolo_actual in Vxt:  # Si el símbolo actual es un no terminal
-            for izq, der in P:  # Recorre las producciones
-                if izq == simbolo_actual:  # Si encuentra una producción aplicable
-                    subarbol = Nodo(izq)  # Crea un nodo para el no terminal
-                    if arbol_nodo.izquierda is None:
-                        arbol_nodo.izquierda = subarbol  # Lo agrega como hijo izquierdo si no tiene
-                    else:
-                        arbol_nodo.derecha = subarbol  # O como hijo derecho si ya tiene izquierdo
-
-                    if der == ['ε']:  # Si es una producción epsilon
-                        valido, _ = derivar(actual[1:], resto, subarbol)  # Deriva sin consumir símbolo del resto
-                        if valido:
-                            return True, arbol_nodo
-                    else:
-                        nuevo_actual = der + actual[1:]  # Reemplaza el no terminal por su producción
-                        valido, nuevo_arbol = derivar(nuevo_actual, resto, subarbol)  # Continúa la derivación
-                        if valido:
-                            return True, arbol_nodo
-            return False, None  # Si no se encuentra una derivación válida
-
-        return False, None  # Si el símbolo no es ni terminal ni no terminal
-
-    tokens = list(cadena.replace(" ", ""))  # Convierte la cadena en una lista de tokens sin espacios
-    valido, arbol = derivar([S], tokens, Nodo(S))  # Inicia la derivación desde el símbolo inicial
-    return valido, arbol  # Devuelve si la cadena es válida y el árbol de derivación
-
-# Función recursiva para agregar nodos al grafo
-def agregar_nodos(grafo, nodo):
-    if nodo:
-        grafo.add_node(nodo.id, label=nodo.valor)  # Agrega el nodo al grafo
-        if nodo.izquierda:
-            grafo.add_edge(nodo.id, nodo.izquierda.id)  # Agrega una arista al hijo izquierdo
-            agregar_nodos(grafo, nodo.izquierda)  # Procesa recursivamente el hijo izquierdo
-        if nodo.derecha:
-            grafo.add_edge(nodo.id, nodo.derecha.id)  # Agrega una arista al hijo derecho
-            agregar_nodos(grafo, nodo.derecha)  # Procesa recursivamente el hijo derecho
-
-# Función para dibujar el árbol de derivación
-def dibujar_arbol(raiz, expresion):
-    grafo = nx.DiGraph()  # Crea un nuevo grafo dirigido
-    agregar_nodos(grafo, raiz)  # Agrega los nodos al grafo
-
-    try:
-        pos = graphviz_layout(grafo, prog='dot')  # Calcula las posiciones de los nodos
-    except:
-        print("Error: graphviz_layout requiere que pygraphviz o pydot estén instalados.")
-        return
-
-    etiquetas = nx.get_node_attributes(grafo, 'label')  # Obtiene las etiquetas de los nodos
-
-    #Posiciones de las ventanas de los grafos
-    nx.draw(grafo, pos, labels=etiquetas, with_labels=True, arrows=True, node_size=2000, node_color='lightblue')
-    plt.title(f"Árbol de Derivación para la Expresión: {expresion}")  # Agrega un título al gráfico
-    plt.show()  # Muestra el gráfico
-
-# Función principal para analizar una gramática
-def analizar_gramatica(archivo_gramatica):
-    try:
-        Vt, Vxt, S, P = leer_gramatica(archivo_gramatica)  # Lee la gramática del archivo
-
-        # Imprime los componentes de la gramática
-        print("\nComponentes de la Gramática:")
-        print(f"Terminales (Vt): {Vt}")
-        print(f"No terminales (Vxt): {Vxt}")
-        print(f"Símbolo inicial (S): {S}")
-        print("Producciones (P):")
-        for izquierda, derecha in P:
-            print(f"  {izquierda} -> {' '.join(derecha)}")
-
-        validar_gramatica(Vt, Vxt, S, P)  # Valida la gramática
-
-        # Bucle principal para validar cadenas
-        while True:
-            cadena = input("\nIngrese la cadena a validar (o 'salir' para terminar): ")
-            if cadena.lower() == 'salir':
-                break
-
-            valido, arbol = validar_cadena(cadena, Vt, Vxt, S, P)  # Valida la cadena
-            if valido:
-                print(f"La cadena '{cadena}' es válida según la gramática.")
-                dibujar_arbol(arbol, cadena)  # Dibuja el árbol de derivación
+# Función auxiliar para validar una producción específica
+def es_valida_produccion(gramatica, cadena, produccion):
+    """
+    Verifica si una producción específica puede generar la cadena proporcionada.
+    """
+    i = 0  # Índice para recorrer la cadena
+    produccion = produccion.split()  # Divide la producción en símbolos
+    
+    # Recorre los símbolos en la producción
+    for simbolo in produccion:
+        if simbolo in gramatica:  # Si es un no terminal
+            # Intenta consumir la cadena parcialmente
+            for j in range(i, len(cadena) + 1):
+                if es_valida_cadena(gramatica, cadena[i:j], simbolo):
+                    i = j  # Avanza el índice en la cadena
+                    break
             else:
-                print(f"La cadena '{cadena}' no es válida según la gramática.")
-
-    except Exception as e:
-        print(f"Error: {str(e)}")  # Imprime cualquier error que ocurra
-
-# Función para analizar expresiones aritméticas
-def analizar_aritmetica(archivo_gramatica):
-    try:
-        Vt, Vxt, S, P = leer_gramatica(archivo_gramatica)  # Lee la gramática del archivo
-
-        # Imprime los componentes de la gramática aritmética
-        print("\nComponentes de la Gramática Aritmética:")
-        print(f"Terminales (Vt): {Vt}")
-        print(f"No terminales (Vxt): {Vxt}")
-        print(f"Símbolo inicial (S): {S}")
-        print("Producciones (P):")
-        for izquierda, derecha in P:
-            print(f"  {izquierda} -> {' '.join(derecha)}")
-
-        validar_gramatica(Vt, Vxt, S, P)  # Valida la gramática
-
-        # Bucle principal para validar expresiones aritméticas
-        while True:
-            expresion = input("\nIngrese la expresión aritmética a validar (o 'salir' para terminar): ")
-            #Validar si se selecciono salir en el menú
-            if expresion.lower() == 'salir':
-                break
-
-            valido, arbol = validar_cadena(expresion, Vt, Vxt, S, P)  # Valida la expresión
-            if valido:
-                print(f"La expresión aritmética '{expresion}' es válida según la gramática.")
-                dibujar_arbol(arbol, expresion)  # Dibuja el árbol de derivación
+                return False  # Si no se puede consumir la cadena, es inválido
+        else:  # Es un terminal
+            if i < len(cadena) and cadena[i] == simbolo:
+                i += 1  # Avanza si coincide el terminal
             else:
-                print(f"La expresión aritmética '{expresion}' no es válida según la gramática.")
+                return False
+    
+    return i == len(cadena)  # Devuelve True si toda la cadena ha sido consumida
 
-    except Exception as e:
-        print(f"Error: {str(e)}")  # Imprime cualquier error que ocurra
+# Función recursiva para construir el árbol de derivación
+def construir_arbol_recursivo(gramatica, cadena, simbolo, G, parent):
+    """
+    Construye recursivamente un árbol de derivación para una cadena dada y lo almacena en el grafo G.
+    """
+    #Añade los nodos y las aristas
+    if simbolo not in gramatica:  # Es un terminal
+        G.add_node(cadena)
+        G.add_edge(parent, cadena)
+        return cadena
 
-# Función del menú principal
-def menu():
-    #Mientras se esté corriendo el programa
-    while True:
-        print("\nSeleccione una opción:")
-        print("1. Analizador de gramática") #Analizara la gramática y la cadena que se ingrese por consola
-        print("2. Analizador de expresiones aritméticas") #Analizara las expresiones escritas inorder (1 + 1)
-        print("3. Salir") #Rompe el while
-        opcion = input("Ingrese su opción (1/2/3): ") #Solicitar la opción al usuario
+    #Producciones para los espacios y cadenas vacías
+    for produccion in gramatica[simbolo]:
+        if produccion == 'ε' and cadena == "":
+            G.add_node("ε")
+            G.add_edge(parent, "ε")
+            return "ε"
 
-        #Iterar sobre la opción
-        if opcion == '1':
-            #Analizador de gramaticas, cargar el archivo
-            archivo_gramatica = input("Ingrese el nombre del archivo de gramática (con extensión .txt): ")
-            analizar_gramatica(archivo_gramatica)  # Llama a la función de análisis de gramática
-        elif opcion == '2':
-            #Busca la gramatica de las expresiones matemáticas
-            archivo_gramatica = input("Ingrese el nombre del archivo de gramática aritmética (con extensión .txt): ")
-            analizar_aritmetica(archivo_gramatica)  # Llama a la función de análisis de expresiones aritméticas
-        elif opcion == '3':
-            #Salir del programa y romper el while
-            print("Saliendo...")
-            break  # Sale del bucle y termina el programa
-        else:
-            print("Opción no válida. Intente de nuevo.")
+        i = 0
+        #Crear una lista para los hijos del árbol
+        hijos = []
+        produccion = produccion.split()
+        
+        #Buscar los caracteres de la gramática en la producción
+        for char in produccion:
+            if char in gramatica:
+                subcadena = cadena[i:i+1]  # Procesa un carácter a la vez
+                #Añadir a los hijos de árbol los caracteres válidos
+                if es_valida_cadena(gramatica, subcadena, char):
+                    hijos.append((char, subcadena))
+                    i += len(subcadena)
+            elif i < len(cadena) and cadena[i] == char:
+                hijos.append((char, char))
+                i += 1
 
-# Punto de entrada del programa
+        #Recorrer la cadena, en el tamaño de la mismo
+        #Se construye un árbol recursivo
+        if i == len(cadena):
+            #recorrer cada hijo de la gramática en la subcadena a validar
+            for hijo, subcadena in hijos:
+                #Añadir los nodos y las aristas de los árboles
+                G.add_node(hijo)
+                G.add_edge(parent, hijo)
+                #Construir el árbol
+                construir_arbol_recursivo(gramatica, subcadena, hijo, G, hijo)
+            return
+
+# Función para construir el árbol de derivación
+def construir_arbol(gramatica, cadena):
+    """
+    Construye y dibuja el árbol de derivación para una cadena dada usando la gramática proporcionada.
+    """
+    G = nx.DiGraph()  # Grafo dirigido para el árbol
+
+    # Nodo raíz
+    G.add_node("S")
+
+    if cadena == "ε":  # Caso especial para cadena vacía
+        G.add_edge("S", "ε")
+    else:
+        construir_arbol_recursivo(gramatica, cadena, "S", G, "S")  # Construcción recursiva
+
+    # Dibujar el árbol
+    pos = graphviz_layout(G, prog='dot')
+    nx.draw(G, pos, with_labels=True, node_size=2000, node_color="skyblue", font_size=16, font_weight="bold")
+    plt.show()
+
+# Función principal del programa
+def main():
+    """
+    Función principal que coordina la lectura de la gramática, la validación de cadenas y la construcción del árbol.
+    """
+    # Paso 1: Pedir el archivo de gramática al usuario
+    archivo_gramatica = input("Ingresa el nombre del archivo de gramática (.txt): ")
+
+    # Paso 2: Leer la gramática desde el archivo
+    gramatica, simbolo_inicial, terminales, no_terminales = leer_gramatica(archivo_gramatica)
+
+    # Paso 3: Imprimir los detalles de la gramática
+    imprimir_gramatica(gramatica, simbolo_inicial, terminales, no_terminales)
+
+    # Paso 4: Pedir la cadena de texto al usuario
+    cadena = input("Ingresa la cadena para verificar (usa espacios para simbolizar 'ε'): ")
+
+    # Reemplazar espacios en la cadena por el símbolo de vacío (ε)
+    cadena = cadena.replace(" ", "ε")
+
+    # Paso 5: Validar la cadena ingresada
+    if cadena == "":
+        cadena = "ε"  # Si está vacía, la representamos como ε (cadena vacía)
+
+    if es_valida_cadena(gramatica, cadena.replace("ε", "")):  # Validar la cadena sin ε
+        print(f"La cadena '{cadena}' es válida.")
+        construir_arbol(gramatica, cadena.replace("ε", ""))  # Construir árbol de derivación
+    else:
+        print(f"La cadena '{cadena}' no es válida.")
+
+# Ejecutar el programa principal si es el script principal
 if __name__ == "__main__":
-    menu()  # Llama a la función del menú principal
+    main()

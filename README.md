@@ -2,18 +2,19 @@
 
  **Realizado por:**
  - Mariana Ruge Vargas
+ - Andrés Sebastian Urrego Amaya
+ - Julian Esteban Rincón Rodríguez
+ - Sebastián Cortés Briceño
+ 
 
 ## Descripción
 Este repositorio contiene la implementación para la construcción de un árbol gramatical a partir de una cadena libre de texto que es validada anteriormente, y muestra la representación de la cadena recibida según la gramática solicitada.
-Además analiza la gramática solicitada o expresiones aritméticas dependiendo del archivo solicitada y devuelve si la cadena cumple con lo estipulado, posteriormente devuelve el árbol de la gramática base.
 
-Por otro lado, puede analizar y construir el arbol de diferentes expresiones aritméticas siempre y cuando cumplan con la gramática estipulada.
 
 ###  Funciones
 En analizador realiza las siguientes funciones.
 1. **Lee una gramática** Desde un archivo.txt
 2. **Valida las cadenas** Se valida la entrada según la entrada.
-5. **Valida funciones aritméticas":** Y sus operadores correspondientes.
 3. **Construye un árbol sintáctico** representa la derivación de una cadena u operación aritmética.
 4. **Mostrar el árbol** Se grafica por medio de matplotlib.
 
@@ -24,20 +25,6 @@ Esta se compone de los siguientes elementos para poder ser procesado correctamen
 - **No terminales (Vxt):** Lista de símbolos no terminales.
 - **Símbolo inicial (S):** El símbolo inicial de la gramática.
 - **Producciones (P):** Conjunto de producciones en la forma `X -> Y Z`, donde `X` es un no terminal y `Y Z` son secuencias de terminales y/o no terminales.
-
-### Archivo de gramática (números)
-Se compone de los siguientes elementos:
-
-**Terminales (Vt)**: Símbolos que aparecen en las expresiones aritméticas. Incluyen operadores (+, -, *, /), paréntesis ((, )), y dígitos (0 a 9).
-
-**No terminales (Vxt):**
-- **E**: Expresión.
-- **T:** Término.
-- **F:** Factor.
-- **E', T':** Representan continuaciones de E y T, respectivamente.
-- **Símbolo inicial (S):** E: La producción comienza con una expresión.
-- No hay productos (P)
-
 
 ## Uso
 - Para correr este programa debes hacer lo siguiente:
@@ -91,19 +78,14 @@ Se compone de los siguientes elementos:
 
 		2.  **gramatica.txt** Es el archivo que contiene la gramática a evaluar en cada 		una de las entradas o inputs. 
 		Incluye los símbolos terminales, no terminales, el símbolo inicial y las producciones necesarias para la validación.
-		3. **matematicas.txt**: Es el archivo que contiene la gramática a evaluar en cada  una de las entradas o inputs, cuando se quiere analizar cadenas numéricas o expresiones matemáticas .
+		3.  **gramatica2.txt** Es el archivo que contiene la gramática a evaluar en cada 		una de las entradas o inputs. 
+		Incluye los símbolos terminales, no terminales, el símbolo inicial y las producciones necesarias para la validación.
 
 ### Ejecutar el programa
 - Con los archivos en tu entorno local deberás, en tu terminal unix, ejecutar el programa.
 - Usa el siguiente comando para correr el programa en tu entorno local.
 
 			python arboles_binarios.py
-			
-- Te mostrará un menú, en él,  debes elegir que quieres realizar.
-1. Analisis de gramática (recibe el archivo gramatica.txt), solicita la cadena a validar.
-2. Análisis matemático (recibe el archivo matematicas.txt), solicita las expresiones matemáticas
-- Ambos, si son validos devuelven un arbol con la estructura sintáctica de la entrada.
-
-La opción 3 finaliza el programa.
-
+		
+- El programa solicitará el archivo .txt con la cadena a validar, mostrará la gramática que este contiene, una vez ingresas la cadena, si esta es válida se mostrará el árbol.
 `
